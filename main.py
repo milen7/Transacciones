@@ -1,7 +1,7 @@
 import pytz
 from datetime import datetime
 
-from models import Customer,Transaction,Invoice,CustomerBase,CustomerCreate
+from models import Customer,Transaction,Invoice,CustomerBase,CustomerCreate,CustomerUpdate
 from db import SessionDep,create_all_tables
 from fastapi import FastAPI, HTTPException,status
 from sqlmodel import select
@@ -47,6 +47,17 @@ async def read_costumer(customer_id: int, session: SessionDep):
     customer_db = session.get(Customer,customer_id)
     if not customer_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,DETAIL="Customer doesn't exist")
+    return customer_db
+
+@app.patch("/customers/{customer_id}",response_model=Customer,status_code=status.HTTP_201_CREATED)
+async def refresh_costumer(customer_id: int,customer_data:CustomerUpdate ,session: SessionDep):
+    customer_db = session.get(Customer,customer_id)
+    if not customer_db:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,DETAIL="Customer doesn't exist")
+    customer_data_dict = customer_data.model_dump(exclude_unset=True)
+    customer_db.sqlmodel_update(customer_data_dict)
+    session.commit()
+    session.refresh(customer_db)
     return customer_db
 
 @app.delete("/customers/{customer_id}")
