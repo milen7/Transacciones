@@ -4,11 +4,12 @@ from datetime import datetime
 from models import Transaction,Invoice
 from db import create_all_tables
 from fastapi import FastAPI
-from .routers import customers,transactions
+from .routers import customers,transactions,invoices
 
 app = FastAPI(lifespan=create_all_tables)
 app.include_router(customers.router)
 app.include_router(transactions.router)
+app.include_router(invoices.router)
 
 @app.get("/")
 async def root():
@@ -31,10 +32,7 @@ async def time(iso_code:str):
 
 
 
-@app.post("/Invoices",response_model=Invoice)
-async def create_invoice(invoice_data: Invoice):
-    breakpoint()
-    return invoice_data
+
 
 
 
